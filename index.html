@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sum.it</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lcd0:#0f380f; --lcd1:#306230; --lcd2:#8bac0f; --lcd3:#9bbc0f;
+  --shell:#d9d6cc; --shell-hi:#f7f5ee; --shell-lo:#a9a699;
+  --bezel:#5b5d73; --bezel-lo:#3d3f52;
+  --magenta:#a2204f; --magenta-hi:#e0568a;
+  --px:'Press Start 2P',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  background:radial-gradient(circle at 50% 30%,#2b2d42,#12131f 70%);
+  display:grid;place-items:center;padding:24px 16px;font-family:var(--px);
+  image-rendering:pixelated;
+}
+
+/* ---------- console shell ---------- */
+.gb{
+  position:relative;width:min(360px,100%);padding:26px 26px 38px;
+  border-radius:18px 18px 70px 18px;
+  background:linear-gradient(145deg,var(--shell-hi),var(--shell) 40%,var(--shell-lo));
+  box-shadow:
+    inset 0 2px 2px #fff, inset 0 -6px 10px rgba(0,0,0,.25),
+    inset 4px 0 6px rgba(255,255,255,.5), inset -4px 0 8px rgba(0,0,0,.15),
+    0 6px 0 #8d8a7e, 0 12px 0 #76736a, 0 30px 50px rgba(0,0,0,.6);
+}
+/* glossy sheen across the shell */
+.gb::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 32%);
+  mix-blend-mode:soft-light;
+}
+.top-rail{display:flex;justify-content:space-between;font-size:6px;color:#8a8779;letter-spacing:1px;margin-bottom:10px;
+  border-bottom:2px solid #bcb9ac;padding-bottom:6px;box-shadow:0 2px 0 #fff}
+
+/* ---------- screen ---------- */
+.bezel{
+  background:linear-gradient(160deg,#6c6e86,var(--bezel) 40%,var(--bezel-lo));
+  border-radius:10px 10px 44px 10px;padding:16px 18px 12px;
+  box-shadow:inset 0 3px 4px rgba(255,255,255,.25),inset 0 -3px 6px rgba(0,0,0,.5),0 3px 0 #2d2f3f;
+}
+.bezel-head{display:flex;align-items:center;gap:8px;font-size:6px;color:#bfc0d4;margin-bottom:8px}
+.bezel-head .bar{flex:1;height:2px;background:#bfc0d4;box-shadow:0 4px 0 #bfc0d4;opacity:.7}
+.led{width:7px;height:7px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 6px #ff3b5c,inset 0 -1px 2px rgba(0,0,0,.4);animation:blink 2s steps(1) infinite}
+@keyframes blink{50%{opacity:.35}}
+
+.lcd{
+  position:relative;height:290px;background:var(--lcd3);color:var(--lcd0);
+  border:3px solid var(--lcd0);border-radius:3px;overflow:hidden;
+  box-shadow:inset 0 0 18px rgba(15,56,15,.55);
+  display:flex;flex-direction:column;font-size:8px;line-height:1.7;
+}
+/* pixel grid + glass glare */
+.lcd::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.28) 0,rgba(255,255,255,0) 38%),
+    repeating-linear-gradient(0deg,rgba(15,56,15,.07) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(90deg,rgba(15,56,15,.05) 0 1px,transparent 1px 3px);
+}
+.hdr{background:var(--lcd0);color:var(--lcd3);padding:5px 8px;display:flex;justify-content:space-between;font-size:7px;flex:none}
+.view{display:none;flex:1;min-height:0;padding:8px;flex-direction:column;gap:6px}
+.view.on{display:flex}
+
+/* title */
+#v-title{align-items:center;justify-content:center;text-align:center;gap:12px}
+.logo{font-size:26px;color:var(--lcd0);text-shadow:2px 2px 0 var(--lcd2),4px 4px 0 var(--lcd1);animation:drop .9s steps(8) both}
+@keyframes drop{from{transform:translateY(-120px)}}
+.logo i{font-style:normal;color:var(--lcd1)}
+.sigma{font-size:34px;animation:bob 1s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.press{animation:flash 1s steps(1) infinite;font-size:8px}
+@keyframes flash{50%{opacity:0}}
+.copy{font-size:6px;color:var(--lcd1)}
+
+/* input */
+textarea{
+  flex:1;resize:none;border:2px solid var(--lcd0);background:var(--lcd2);color:var(--lcd0);
+  font:inherit;font-size:7px;line-height:1.9;padding:6px;outline:none;border-radius:2px;
+}
+textarea::placeholder{color:var(--lcd1)}
+textarea::selection{background:var(--lcd0);color:var(--lcd3)}
+.row{display:flex;justify-content:space-between;font-size:6px;color:var(--lcd1);flex:none}
+.modes{display:flex;gap:4px;flex:none}
+.chip{flex:1;text-align:center;padding:4px 0;border:2px solid var(--lcd0);font-size:6px;cursor:pointer;background:var(--lcd3)}
+.chip.sel{background:var(--lcd0);color:var(--lcd3)}
+
+/* loading */
+#v-load{align-items:center;justify-content:center;text-align:center;gap:10px}
+.pbar{width:80%;height:14px;border:2px solid var(--lcd0);padding:1px}
+.pbar b{display:block;height:100%;width:0;background:var(--lcd0);transition:width .25s steps(4)}
+
+/* result */
+.out{flex:1;overflow:auto;border:2px solid var(--lcd0);background:var(--lcd2);padding:6px;font-size:7px;line-height:1.9;scrollbar-width:none}
+.out::-webkit-scrollbar{display:none}
+.out h4{font-size:7px;background:var(--lcd0);color:var(--lcd3);display:inline-block;padding:1px 4px;margin:4px 0}
+.out ul{padding-left:10px}
+.stat{display:flex;gap:6px;margin-top:4px}
+.stat span{border:2px solid var(--lcd0);padding:1px 4px;font-size:6px}
+.cur::after{content:"█";animation:flash .6s steps(1) infinite}
+
+/* ---------- controls ---------- */
+.label{font-size:11px;color:#2e3a8c;font-style:italic;letter-spacing:1px;margin:18px 0 4px;text-shadow:1px 1px 0 #fff;text-align:center}
+.label small{font-size:7px;color:#6a6780;font-style:normal;display:block;margin-top:4px}
+.controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:0 6px}
+
+/* D-pad */
+.dpad{position:relative;width:96px;height:96px}
+.dpad button{
+  position:absolute;width:32px;height:32px;border:0;cursor:pointer;
+  background:linear-gradient(145deg,#4a4a54,#17171c);
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.35),0 4px 0 #0b0b0e,0 6px 6px rgba(0,0,0,.5);
+  transition:transform .05s,box-shadow .05s;
+}
+.dpad button:active,.dpad button.p{transform:translateY(3px);box-shadow:inset 0 2px 1px rgba(255,255,255,.2),0 1px 0 #0b0b0e}
+.dpad .u{left:32px;top:0;border-radius:5px 5px 0 0}
+.dpad .d{left:32px;top:64px;border-radius:0 0 5px 5px}
+.dpad .l{left:0;top:32px;border-radius:5px 0 0 5px}
+.dpad .r{left:64px;top:32px;border-radius:0 5px 5px 0}
+.dpad .c{left:32px;top:32px;width:32px;height:32px;background:#202026;box-shadow:none;pointer-events:none}
+.dpad .c::after{content:"";position:absolute;inset:11px;border-radius:50%;background:radial-gradient(#0e0e12,#2a2a31)}
+
+/* A / B */
+.ab{position:relative;width:118px;height:78px;transform:rotate(-24deg)}
+.ab div{position:absolute;text-align:center}
+.round{
+  width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+  background:radial-gradient(circle at 35% 28%,#fff 0,var(--magenta-hi) 14%,var(--magenta) 55%,#6b1236);
+  box-shadow:inset 0 -4px 6px rgba(0,0,0,.35),0 6px 0 #5a0f2d,0 9px 8px rgba(0,0,0,.45);
+  transition:transform .05s,box-shadow .05s;
+}
+.round:active,.round.p{transform:translateY(4px);box-shadow:inset 0 -4px 6px rgba(0,0,0,.35),0 2px 0 #5a0f2d}
+.ab .b{left:0;top:26px}.ab .a{left:64px;top:6px}
+.ab span{display:block;margin-top:12px;font-size:8px;color:#2e3a8c}
+
+/* start / select */
+.ss{display:flex;gap:22px;justify-content:center;margin-top:22px;transform:rotate(-24deg)}
+.pill{text-align:center;font-size:6px;color:#2e3a8c}
+.pill button{
+  display:block;width:46px;height:12px;border:0;border-radius:8px;cursor:pointer;margin:0 auto 8px;
+  background:linear-gradient(#8e8e98,#4c4c56);box-shadow:inset 0 1px 1px rgba(255,255,255,.5),0 3px 0 #2c2c33;
+}
+.pill button:active,.pill button.p{transform:translateY(2px);box-shadow:0 1px 0 #2c2c33}
+
+/* speaker */
+.speaker{position:absolute;right:30px;bottom:24px;display:flex;gap:6px;transform:rotate(-24deg)}
+.speaker i{width:7px;height:46px;border-radius:4px;background:linear-gradient(90deg,#8a877b,#c4c1b5);box-shadow:inset 1px 0 2px rgba(0,0,0,.5),1px 0 0 #fff}
+
+.hint{margin-top:18px;font-size:6px;line-height:2;color:#8f8ca5;text-align:center;max-width:360px}
+@media (max-width:380px){.gb{padding:20px 16px 34px}.lcd{height:260px}}
+</style>
+</head>
+<body>
+<main>
+<div class="gb">
+  <div class="top-rail"><span>◄ OFF · ON ►</span><span>STELLAR GALAXY LABS</span></div>
+
+  <div class="bezel">
+    <div class="bezel-head"><div class="led"></div>BATTERY<div class="bar"></div></div>
+
+    <div class="lcd" id="lcd">
+      <div class="hdr"><span id="h-title">SUM.IT</span><span id="h-mode">AI:READY</span></div>
+
+      <!-- TITLE -->
+      <section class="view on" id="v-title">
+        <div class="sigma">∑</div>
+        <div class="logo">SUM<i>.</i>IT</div>
+        <div class="copy">AI SUMMARY &amp; ANALYSIS</div>
+        <div class="press">PRESS START</div>
+        <div class="copy">©2026 SGL · v0.1 PROTOTYPE</div>
+      </section>
+
+      <!-- INPUT -->
+      <section class="view" id="v-input">
+        <div class="modes" id="modes">
+          <div class="chip sel" data-m="summary">SUMMARY</div>
+          <div class="chip" data-m="analysis">ANALYSIS</div>
+          <div class="chip" data-m="both">BOTH</div>
+        </div>
+        <textarea id="txt" spellcheck="false" placeholder="PASTE TEXT OR ARTICLE HERE...&#10;&#10;THEN PRESS [A] TO SUM IT!"></textarea>
+        <div class="row"><span id="count">0 CHARS</span><span>[B] CLEAR</span></div>
+      </section>
+
+      <!-- LOADING -->
+      <section class="view" id="v-load">
+        <div class="sigma">∑</div>
+        <div id="load-msg">CONNECTING TO AI...</div>
+        <div class="pbar"><b id="pb"></b></div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="view" id="v-result">
+        <div class="out" id="out"></div>
+        <div class="row"><span>▲▼ SCROLL</span><span>[B] BACK</span></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="label">Sum.it<small>◄ AI POWERED ►</small></div>
+
+  <div class="controls">
+    <div class="dpad">
+      <button class="u" data-k="up" aria-label="Up"></button>
+      <button class="l" data-k="left" aria-label="Left"></button>
+      <div class="c"></div>
+      <button class="r" data-k="right" aria-label="Right"></button>
+      <button class="d" data-k="down" aria-label="Down"></button>
+    </div>
+    <div class="ab">
+      <div class="b"><button class="round" data-k="b" aria-label="B"></button><span>B</span></div>
+      <div class="a"><button class="round" data-k="a" aria-label="A"></button><span>A</span></div>
+    </div>
+  </div>
+
+  <div class="ss">
+    <div class="pill"><button data-k="select" aria-label="Select"></button>SELECT</div>
+    <div class="pill"><button data-k="start" aria-label="Start"></button>START</div>
+  </div>
+
+  <div class="speaker"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<p class="hint">KEYS: ENTER=START · Z=A · X=B · ARROWS=D-PAD · SHIFT=SELECT</p>
+</main>
+
+<script>
+/* =====================================================================
+   SUM.IT — UI FACADE
+   The interface is real; the AI call is a stub.  Swap `analyze()` to
+   hit HuggingFace (see HF CONFIG below).  Don't ship a token in the
+   browser — proxy through your own backend for production.
+   ===================================================================== */
+
+/* ---------- HF CONFIG ---------- */
+const HF = {
+  token: "",   // leave empty = demo mode (mock output). Prototype only!
+  summaryModel:   "facebook/bart-large-cnn",
+  sentimentModel: "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+  base: "https://router.huggingface.co/hf-inference/models/",
+};
+
+async function hf(model, inputs, parameters) {
+  const r = await fetch(HF.base + model, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${HF.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ inputs, parameters }),
+  });
+  if (!r.ok) throw new Error(`HF ${r.status}`);
+  return r.json();
+}
+
+/* returns { summary, points[], sentiment, label, words, readMins } */
+async function analyze(text, mode) {
+  const words = text.trim().split(/\s+/).length;
+  const base = { words, readMins: Math.max(1, Math.round(words / 220)) };
+
+  if (HF.token) {
+    const out = { ...base };
+    if (mode !== "analysis") {
+      const s = await hf(HF.summaryModel, text, { max_length: 120, min_length: 30 });
+      out.summary = s[0].summary_text;
+    }
+    if (mode !== "summary") {
+      const r = await hf(HF.sentimentModel, text.slice(0, 2000));
+      const top = (r[0] || r).sort((a, b) => b.score - a.score)[0];
+      out.label = top.label; out.sentiment = top.score;
+    }
+    return out;
+  }
+
+  // ---- demo mode: local mock so the prototype is clickable ----
+  await new Promise(r => setTimeout(r, 1400));
+  const sentences = text.replace(/\s+/g, " ").match(/[^.!?]+[.!?]*/g) || [text];
+  const pick = sentences.slice(0, 2).join(" ").trim();
+  return {
+    ...base,
+    summary: pick.length > 220 ? pick.slice(0, 217) + "..." : pick,
+    points: sentences.slice(0, 4).map(s => s.trim().split(" ").slice(0, 8).join(" ")),
+    label: /\b(bad|worse|fail|loss|problem|sad)\b/i.test(text) ? "NEGATIVE" : "POSITIVE",
+    sentiment: 0.5 + Math.random() * 0.45,
+  };
+}
+
+/* ---------- UI STATE MACHINE ---------- */
+const $ = id => document.getElementById(id);
+const views = ["title", "input", "load", "result"];
+let view = "title", mode = "summary";
+
+function go(v) {
+  view = v;
+  views.forEach(n => $("v-" + n).classList.toggle("on", n === v));
+  $("h-title").textContent = { title: "SUM.IT", input: "INPUT", load: "THINKING", result: "RESULT" }[v];
+  $("h-mode").textContent = v === "load" ? "AI:BUSY" : "AI:READY";
+  if (v === "input") $("txt").focus(); else document.activeElement.blur();
+}
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("sel", c.dataset.m === m));
+}
+
+$("modes").addEventListener("click", e => e.target.dataset.m && setMode(e.target.dataset.m));
+$("txt").addEventListener("input", e => $("count").textContent = e.target.value.length + " CHARS");
+
+async function run() {
+  const text = $("txt").value.trim();
+  if (text.length < 20) { $("count").textContent = "NEED MORE TEXT!"; return; }
+  go("load");
+  const msgs = ["CONNECTING TO AI...", "READING TEXT...", "SUMMING IT UP...", "ALMOST DONE..."];
+  let i = 0;
+  const t = setInterval(() => {
+    i = Math.min(i + 1, 3);
+    $("load-msg").textContent = msgs[i];
+    $("pb").style.width = (i + 1) * 25 + "%";
+  }, 380);
+  $("pb").style.width = "10%";
+  try {
+    render(await analyze(text, mode));
+  } catch (e) {
+    $("out").innerHTML = `<h4>ERROR</h4><br>${e.message}<br>CHECK TOKEN / MODEL.`;
+  }
+  clearInterval(t);
+  go("result");
+}
+
+function render(r) {
+  const o = $("out");
+  let h = "";
+  if (r.summary) {
+    h += `<h4>SUMMARY</h4><div id="sum" class="cur"></div>`;
+    if (r.points) h += `<h4>KEY POINTS</h4><ul>${r.points.map(p => `<li>${p}</li>`).join("")}</ul>`;
+  }
+  if (r.label) h += `<h4>ANALYSIS</h4><div class="stat"><span>${r.label}</span><span>${Math.round(r.sentiment * 100)}%</span></div>`;
+  h += `<div class="stat"><span>${r.words} WORDS</span><span>~${r.readMins} MIN</span></div>`;
+  o.innerHTML = h; o.scrollTop = 0;
+
+  const el = $("sum");                       // typewriter effect
+  if (el) { let n = 0; const iv = setInterval(() => {
+    el.textContent = r.summary.slice(0, ++n);
+    if (n >= r.summary.length) { clearInterval(iv); el.classList.remove("cur"); }
+  }, 22); }
+}
+
+/* ---------- BUTTONS ---------- */
+const keys = {
+  start()  { if (view === "title") go("input"); else if (view === "input") run(); },
+  a()      { if (view === "title") go("input"); else if (view === "input") run(); else if (view === "result") { $("txt").value = ""; $("count").textContent = "0 CHARS"; go("input"); } },
+  b()      { if (view === "input") { $("txt").value = ""; $("count").textContent = "0 CHARS"; } else if (view === "result") go("input"); else if (view === "input") go("title"); },
+  select() { setMode(["summary", "analysis", "both"][(["summary", "analysis", "both"].indexOf(mode) + 1) % 3]); },
+  left()   { keys.select(); },
+  right()  { keys.select(); },
+  up()     { if (view === "result") $("out").scrollTop -= 30; },
+  down()   { if (view === "result") $("out").scrollTop += 30; },
+};
+
+document.querySelectorAll("[data-k]").forEach(b =>
+  b.addEventListener("click", () => keys[b.dataset.k]()));
+
+const map = { Enter: "start", z: "a", Z: "a", x: "b", X: "b", Shift: "select",
+              ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
+addEventListener("keydown", e => {
+  const k = map[e.key];
+  if (!k) return;
+  const typing = document.activeElement === $("txt");
+  if (typing && !["Enter", "Escape"].includes(e.key) || (typing && e.key === "Enter" && !e.metaKey && !e.ctrlKey)) return;
+  e.preventDefault();
+  const btn = document.querySelector(`[data-k="${k}"]`);
+  btn.classList.add("p"); setTimeout(() => btn.classList.remove("p"), 120);
+  keys[k]();
+});
+</script>
+</body>
+</html>
