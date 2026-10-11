@@ -5,7 +5,7 @@
 Sum.it е джобно AI приложение за момента, в който документът е важен, а главата ти е пълна. Вадиш телефона, сканираш или поставяш текста, натискаш един бутон и след минута виждаш накратко какво пише и за какво да попиташ.
 
 <p align="center">
-  <img src="ios/SumIt/Assets.xcassets/AppIcon.appiconset/icon.png" width="160" alt="Иконата на Sum.it">
+  <img src="docs/sumit-input.jpg" width="300" alt="Екранът за въвеждане на текст в Sum.it">
 </p>
 
 > Версия 0.1, прототип от Stellar Galaxy Labs.
